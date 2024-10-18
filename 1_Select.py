@@ -17,6 +17,13 @@
 # 
 # Basically, a database is a collection of data tables. You can think of the tables as if they were Excel files, but with the difference that they're usually centralized somewhere instead of being random files.
 
+# %%
+# Load the SQL extension
+%load_ext sql
+
+# Connect to the existing SQLite database file
+%sql sqlite:///my_database.db
+
 # %% [markdown]
 # # SELECT Statement 👉
 # 
@@ -52,7 +59,7 @@
 # %%
 # This query selects all columns from the sql_101_transactions table.
 
-%sql
+%%sql
 SELECT * -- Selecting all the columns
 FROM sql_101_transactions -- From the sql_101_transactions table
 LIMIT 5;
@@ -66,10 +73,10 @@ LIMIT 5;
 # %%
 # Adding WHERE and ORDER BY clauses
 
-%sql
+%%sql
 SELECT * -- Selecting all the columns
 FROM sql_101_transactions -- From the sql_101_transactions table
-WHERE transaction_date >= '2024-08-01' -- With the date being August 1 or later
+WHERE transaction_date >= '2024-06-01' -- With the date being June 1 or later
 ORDER BY amount DESC; -- Ordering by amount in descending order
 
 # %% [markdown]
@@ -80,7 +87,7 @@ ORDER BY amount DESC; -- Ordering by amount in descending order
 # %%
 # Example using LIMIT to display the first 5 rows
 
-%sql
+%%sql
 SELECT *
 FROM sql_101_transactions
 LIMIT 5;
@@ -102,7 +109,7 @@ LIMIT 5;
 # %%
 # Let's see how to apply the WHERE clause to add a filter to the query.
 
-%sql
+%%sql
 SELECT *
 FROM sql_101_transactions
 WHERE sku_id IN (1, 2, 3);
@@ -121,7 +128,7 @@ WHERE sku_id IN (1, 2, 3);
 # %%
 # Write your SQL query here:
 
-%sql
+%%sql
 SELECT *
 FROM sql_101_transactions
 WHERE price_per_unit > 2 AND store_id = 1;
@@ -134,7 +141,7 @@ WHERE price_per_unit > 2 AND store_id = 1;
 # %%
 # Write your SQL query here:
 
-%sql
+%%sql
 SELECT *
 FROM sql_101_transactions
 WHERE amount <= 2 AND sku_id NOT IN (3, 4, 5);
@@ -147,7 +154,7 @@ WHERE amount <= 2 AND sku_id NOT IN (3, 4, 5);
 # %%
 # Write your SQL query here:
 
-%sql
+%%sql
 SELECT *
 FROM sql_101_transactions
 WHERE transaction_date BETWEEN '2024-06-01' AND '2024-06-30';
@@ -162,7 +169,7 @@ We can limit the list of columns that we select in a query by listing them:
 # %%
 # Let's play with the SELECT statement to avoid displaying the IDs of the records.
 
-%sql
+%%sql
 SELECT transaction_date, customer_id, amount,
        amount * price_per_unit AS total_price
 FROM sql_101_transactions
@@ -183,7 +190,7 @@ We can sort our results in ascending or descending order. It works on numerical 
 # %%
 # Now let's remove the filter to get all transactions and order them by `total_price`.
 
-%sql
+%%sql
 SELECT *,
        amount * price_per_unit AS total_price
 FROM sql_101_transactions
@@ -199,14 +206,14 @@ Later on, we'll see the `GROUP BY` clause, which will allow us to get much more 
 # %%
 # This is how we check the full list of SKUs.
 
-%sql
+%%sql
 SELECT DISTINCT sku_id
 FROM sql_101_transactions;
 
 # %%
 # This will give us all the unique combinations of customers and SKUs.
 
-%sql
+%%sql
 SELECT DISTINCT customer_id, sku_id
 FROM sql_101_transactions
 ORDER BY customer_id, sku_id; -- Ordering to keep customer records together
@@ -222,7 +229,7 @@ ORDER BY customer_id, sku_id; -- Ordering to keep customer records together
 # %%
 # Write your SQL query here:
 
-%sql
+%%sql
 SELECT DISTINCT customer_id
 FROM sql_101_transactions
 WHERE sku_id = 1;
@@ -235,7 +242,7 @@ WHERE sku_id = 1;
 # %%
 # Write your SQL query here:
 
-%sql
+%%sql
 SELECT *,
        amount * price_per_unit AS total_price
 FROM sql_101_transactions
@@ -246,16 +253,16 @@ WHERE amount * price_per_unit > 10;
 
 Formatting is important. Sometimes, we need to manipulate string data to extract or combine certain parts.
 
-Here, we'll see examples using the `LEFT`, `RIGHT`, and `CONCAT` functions with the tables we have.
+SQLite doesn't support `LEFT`, `RIGHT`, or `CONCAT` functions directly, but we can use `substr` and the concatenation operator `||`.
 
 # %%
-# Example using LEFT and RIGHT functions
+# Example using substr function
 # Let's extract parts of the product names from the sql_101_product table.
 
-%sql
+%%sql
 SELECT product_name,
-       LEFT(product_name, 5) AS short_name,
-       RIGHT(product_name, 5) AS end_name
+       substr(product_name, 1, 5) AS short_name,
+       substr(product_name, -5, 5) AS end_name
 FROM sql_101_product
 LIMIT 10;
 
@@ -263,11 +270,11 @@ LIMIT 10;
 # In this query, we take the first 5 characters and the last 5 characters of the `product_name` column.
 
 # %%
-# Example using CONCAT to combine strings
+# Example using concatenation operator to combine strings
 # Let's create a full description by combining brand and product_name.
 
-%sql
-SELECT CONCAT(brand, ' ', product_name) AS full_description,
+%%sql
+SELECT brand || ' ' || product_name AS full_description,
        *
 FROM sql_101_product
 LIMIT 10;
@@ -288,10 +295,10 @@ Very briefly, these are the kinds of commands SQL supports:
 # %%
 # Let's create a new table called hkt_sql_customers.
 
-%sql
+%%sql
 CREATE TABLE hkt_sql_customers (
     customer_id INT,
-    customer_name STRING,
+    customer_name TEXT,
     customer_age INT
 );
 
@@ -301,7 +308,7 @@ CREATE TABLE hkt_sql_customers (
 # %%
 # Inserting data into the table.
 
-%sql
+%%sql
 INSERT INTO hkt_sql_customers (customer_id, customer_name, customer_age)
 VALUES (101, 'Alice', 30),
        (102, 'Bob', 35),
@@ -310,20 +317,20 @@ VALUES (101, 'Alice', 30),
 # %%
 # Altering the table to add a new column.
 
-%sql
-ALTER TABLE hkt_sql_customers ADD COLUMN customer_email STRING;
+%%sql
+ALTER TABLE hkt_sql_customers ADD COLUMN customer_email TEXT;
 
 # %%
 # Inserting a new row with the additional column.
 
-%sql
+%%sql
 INSERT INTO hkt_sql_customers (customer_id, customer_name, customer_age, customer_email)
 VALUES (104, 'Diana', 28, 'diana@example.com');
 
 # %%
 # Updating rows where `customer_email` is NULL.
 
-%sql
+%%sql
 UPDATE hkt_sql_customers
 SET customer_email = 'unknown@example.com'
 WHERE customer_email IS NULL;
@@ -331,7 +338,7 @@ WHERE customer_email IS NULL;
 # %%
 # Deleting a row from the table.
 
-%sql
+%%sql
 DELETE
 FROM hkt_sql_customers
 WHERE customer_id = 103;
@@ -339,14 +346,14 @@ WHERE customer_id = 103;
 # %%
 # Selecting all data from `hkt_sql_customers` to see the current state.
 
-%sql
+%%sql
 SELECT *
 FROM hkt_sql_customers;
 
 # %%
 # Dropping the table.
 
-%sql
+%%sql
 DROP TABLE hkt_sql_customers;
 
 # %% [markdown]
